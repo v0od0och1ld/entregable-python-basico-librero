@@ -51,6 +51,34 @@ def agregar_generos_literarios():
     
     conn.commit()
 
+def agregar_editoriales():
+    conn = conexion()
+    cursor = conn.cursor()
+
+    editoriales = [
+    "Planeta",
+    "Sudamericana",
+    "Siglo XXI Editores",
+    "Paidós",
+    "Interzona",
+    "Emece",
+    "El Ateneo",
+    "Galerna",
+    "Adriana Hidalgo",
+    "Ediciones Continente"
+]
+
+    cursor.execute("SELECT editorial FROM editoriales")
+    editoriales_existentes = cursor.fetchall()
+    editoriales_existentes = [edito[0] for edito in editoriales_existentes]
+        
+    for editorial in editoriales:
+        if editorial not in editoriales_existentes:
+            sql = "INSERT INTO editoriales (editorial) VALUES (?)"
+            cursor.execute(sql, (editorial,))
+    
+    conn.commit()
+
 
 def crear_tabla_autores():
     conn = conexion()
@@ -83,6 +111,12 @@ try:
     agregar_generos_literarios()    
 except:
     print("Hay un error en el agregado de los géneros literarios o los mismos ya fueron creados anteriormente")
+
+try:
+    conexion()
+    agregar_editoriales()    
+except:
+    print("Hay un error en el agregado de las editoriales o las mismos ya fueron creados anteriormente")
 
 try:
     conexion()
