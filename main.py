@@ -55,18 +55,7 @@ def agregar_editoriales():
     conn = conexion()
     cursor = conn.cursor()
 
-    editoriales = [
-    "Planeta",
-    "Sudamericana",
-    "Siglo XXI Editores",
-    "Paidós",
-    "Interzona",
-    "Emece",
-    "El Ateneo",
-    "Galerna",
-    "Adriana Hidalgo",
-    "Ediciones Continente"
-]
+    editoriales = ["Planeta", "Sudamericana", "Siglo XXI Editores", "Paidós", "Interzona", "Emece", "El Ateneo", "Galerna", "Adriana Hidalgo", "Ediciones Continente"]
 
     cursor.execute("SELECT editorial FROM editoriales")
     editoriales_existentes = cursor.fetchall()
@@ -249,14 +238,19 @@ def modificar_categoria():
     def seleccionar_item(event):
         nonlocal nombre
         valor_seleccionado = combo.get()
-        nombre = valor_seleccionado.split(' ')[1]
+        #nombre = valor_seleccionado.split(' ')[1]
+        partes = valor_seleccionado.split(' ', 1)
+        if len(partes) > 1:
+            nombre = partes[1]
+            entry_nombre.delete(0, 'end')
+            entry_nombre.insert(0, nombre)
         entry_nombre.delete(0, 'end')
         entry_nombre.insert(0, nombre)    
 
     top = Toplevel()
     top.title("Modificar Categoría")
     top.geometry("300x150")
-    
+
     ####Combobox 
     categorias = buscar_categorias()        
     combo = ttk.Combobox(top, values=categorias)
@@ -309,7 +303,10 @@ def eliminar_categoria():
     def seleccionar_item(event):
         nonlocal nombre
         valor_seleccionado = combo.get()
-        nombre = valor_seleccionado.split(' ')[1]          
+        #nombre = valor_seleccionado.split(' ')[1]     
+        partes = valor_seleccionado.split(' ', 1)
+        if len(partes) > 1:
+            nombre = partes[1]
 
     top = Toplevel()
     top.title("Borrar Categoría")
@@ -438,9 +435,12 @@ def modificar_editorial():
     def seleccionar_item(event):
         nonlocal nombre
         valor_seleccionado = combo.get()
-        nombre = valor_seleccionado.split(' ')[1]
-        entry_nombre.delete(0, 'end')
-        entry_nombre.insert(0, nombre)    
+        #nombre = valor_seleccionado.split(' ')[1]
+        partes = valor_seleccionado.split(' ', 1)
+        if len(partes) > 1:
+            nombre = partes[1]
+            entry_nombre.delete(0, 'end')
+            entry_nombre.insert(0, nombre)   
 
     top = Toplevel()
     top.title("Modificar Categoría")
@@ -498,7 +498,10 @@ def eliminar_editorial():
     def seleccionar_item(event):
         nonlocal nombre
         valor_seleccionado = combo.get()
-        nombre = valor_seleccionado.split(' ')[1]          
+        #nombre = valor_seleccionado.split(' ')[1]       
+        partes = valor_seleccionado.split(' ', 1)   
+        if len(partes) > 1:
+            nombre = partes[1]
 
     top = Toplevel()
     top.title("Borrar Editorial")
@@ -523,15 +526,207 @@ def eliminar_editorial():
 ################## CRUD EDITORIAL   ################
 ##################                  ################
 
+##################                 ################     
+################## CRUD AUTOR      ################
+##################                 ################
+def buscar_autor(nombre_autor):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "SELECT * FROM autores WHERE autor = ?"
 
-def nuevo_autor():
-    pass
+    cursor.execute(sql, (nombre_autor,))
+    resultado = cursor.fetchone()
 
+    return resultado
+
+def buscar_autores():
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "SELECT * FROM autores order by autor asc"
+
+    cursor.execute(sql)
+    resultado = cursor.fetchall()
+
+    autores_formateados = [f"{autor[0]} {autor[1]}" for autor in resultado] #CAMBIAR
+    
+
+    return autores_formateados #CAMBIAR EN LOS OTROS CRUD
+    
+    
+    
+# Graba en la bd el nuevo autor
+def guardar_autor(nombre_autor):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "INSERT INTO autores (autor) VALUES(?)"
+    try:
+        cursor.execute(sql, (nombre_autor,))
+        print(f"Autor guardado: {nombre_autor}")
+    except:
+        print(f"Error al guardar el autor {nombre_autor}")
+    conn.commit()
+
+
+def guardar_mod_autor(nombre, autormod):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "UPDATE autores SET autor = ? WHERE autor = ?"
+    try:       
+        cursor.execute(sql, (autormod, nombre))
+        conn.commit()
+        
+        return 1        
+    except:
+        conn.close()  
+
+
+# ventana para agregar un nuevo autor
+def nuevo_autor():    
+    def guardar_autorin():
+        autor = entry_autor.get()
+        resultado = buscar_autor(autor)
+        if resultado:            
+            label_aviso.config(text="Autor Existente", fg="red")
+            showerror("Error", "Autor Existente") 
+            top.after(0, lambda: top.focus_force())           
+        else:            
+            guardar_autor(autor)
+            label_aviso.config(text=f"Autor '{autor}' Guardada", fg="green")
+            showinfo("Guardado", "Autor guardado") 
+            top.after(0, lambda: top.focus_force())           
+            entry_autor.delete(0, 'end') 
+
+    top = Toplevel()
+    top.title("Nuevo autor")
+    top.geometry("300x150")
+    
+
+    label_autor = Label(top, text="Ingrese nuevo Autor:")
+    label_autor.pack()
+
+    entry_autor = Entry(top)
+    entry_autor.pack()
+
+    btn_guardar = Button(top, text="Guardar", command=guardar_autorin)
+    btn_guardar.pack()
+    label_aviso = Label(top)  
+    label_aviso.pack()  
+
+#Ventana para modificar autores
 def modificar_autor():
-    pass
+    nombre = None
+    def guardar_modautorin(nombre):
+        autormod = entry_nombre.get()        
+        resultado = guardar_mod_autor(nombre, autormod)
+        if resultado:            
+            label_aviso.config(text="Modificación exitosa", fg="Green")
+            showinfo("Modificar", "Autor modificado") 
+            top.after(1000, lambda: top.destroy())
+            top.after(1000, lambda: root.focus_force())     
+        else:            
+            label_aviso.config(text=f"Error al modificar autor", fg="red")            
+            showerror("Error", "Error al modificar autor")
+            top.after(0, lambda: top.focus_force())
+            
+
+    #funcion para pasar texto al combobox
+    #def seleccionar_item(event):
+    #    nonlocal nombre
+    #    valor_seleccionado = combo.get()
+    #    nombre = valor_seleccionado.split(' ')[1]
+    #    entry_nombre.delete(0, 'end')
+    #    entry_nombre.insert(0, nombre)    
+    def seleccionar_item(event):
+        nonlocal nombre
+        valor_seleccionado = combo.get()
+        partes = valor_seleccionado.split(' ', 1)
+        if len(partes) > 1:
+            nombre = partes[1]
+            entry_nombre.delete(0, 'end')
+            entry_nombre.insert(0, nombre)
+    top = Toplevel()
+    top.title("Modificar Autor")
+    top.geometry("300x150")
+    
+    ####Combobox 
+    autores = buscar_autores()        
+    combo = ttk.Combobox(top, values=autores)
+    combo.pack()
+    combo.bind("<<ComboboxSelected>>", seleccionar_item)
+    ####Combobox
+   
+    entry_nombre = ttk.Entry(top)
+    entry_nombre.pack(pady=10)
+    
+    btn_guardar = Button(top, text="Guardar modificación", command=lambda: guardar_modautorin(nombre))
+    btn_guardar.pack()
+    
+    #### Label de notificación de mensajes
+    label_aviso = Label(top)  
+    label_aviso.pack()  
+    #### Label de notificación de mensajes
+
+
+def borrar_autor(nombre):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "DELETE FROM autores WHERE autor = ?"
+        
+    try:       
+        cursor.execute(sql, (nombre,))
+        conn.commit()
+        conn.close()        
+        return 1        
+    except:
+        conn.close()  
 
 def eliminar_autor():
-    pass
+    nombre = None
+    def eliminar_autorin(nombre):
+        #categoriamod = entry_nombre.get()        
+        resultado = borrar_autor(nombre)
+        if resultado:            
+            label_aviso.config(text="Borrado exitosa", fg="Green")  
+            showinfo("Borrado", "Borrado Exitoso")
+            top.after(1000, lambda: top.destroy())
+            top.after(1000, lambda: root.focus_force())     
+        else:            
+            label_aviso.config(text=f"Error al borrar autor", fg="red") 
+            showerror("Error", "Error al borrar autor")
+            top.after(0, lambda: top.focus_force())            
+            
+
+    #funcion para pasar la variable del combobox
+    def seleccionar_item(event):
+        nonlocal nombre
+        valor_seleccionado = combo.get()
+        #nombre = valor_seleccionado.split(' ')[1]    
+        partes = valor_seleccionado.split(' ', 1)
+        if len(partes) > 1:
+            nombre = partes[1]
+
+    top = Toplevel()
+    top.title("Borrar Autor")
+    top.geometry("300x150")
+    
+    ####Combobox 
+    autores = buscar_autores()        
+    combo = ttk.Combobox(top, values=autores)
+    combo.pack(pady=10)
+    combo.bind("<<ComboboxSelected>>", seleccionar_item)
+    ####Combobox   
+    
+    btn_borrar = Button(top, text="Borrar", command=lambda: eliminar_autorin(nombre))
+    btn_borrar.pack(pady=10)
+    
+    #### Label de notificación de mensajes
+    label_aviso = Label(top)  
+    label_aviso.pack()  
+    #### Label de notificación de mensajes
+
+##################                 ################     
+################## CRUD AUTOR      ################
+##################                 ################
 
 
 root = Tk()
