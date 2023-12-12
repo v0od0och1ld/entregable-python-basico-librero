@@ -89,17 +89,64 @@ def crear_tabla_editorial():
     cursor.execute(sql)
     conn.commit()
 
+def agregar_autores():
+    conn = conexion()
+    cursor = conn.cursor()
+
+    autores = ["Jorge Luis Borges", "Julio Cortázar", "Adolfo Bioy Casares", "Ernesto Sabato", "Marta Lynch", "Leopoldo Marechal"]
+
+    cursor.execute("SELECT autor FROM autores")
+    autores_existentes = cursor.fetchall()
+    autores_existentes = [aut[0] for aut in autores_existentes]
+        
+    for autor in autores:
+        if autor not in autores_existentes:
+            sql = "INSERT INTO autores (autor) VALUES (?)"
+            cursor.execute(sql, (autor,))
+    
+    conn.commit()
+
 
 try:
     conexion()
     crear_tabla_libros()    
 except:
     print("Hay un error en la creación de la tabla de libros o la misma ya fue creada anteriormente")
+
+
+############GENEROS############
+try:
+    conexion()
+    crear_tabla_categorias()    
+except:
+    print("Hay un error en la creación de la tabla de categorias o la misma ya fue creada anteriormente")
+
 try:
     conexion()
     agregar_generos_literarios()    
 except:
     print("Hay un error en el agregado de los géneros literarios o los mismos ya fueron creados anteriormente")
+############GENEROS##############
+###########AUTORES###############
+try:
+    conexion()
+    crear_tabla_autores()    
+except:
+    print("Hay un error en la creación de la tabla de autores o la misma ya fue creada anteriormente")    
+
+try:
+    conexion()
+    agregar_autores()    
+except:
+    print("Hay un error en el agregado de autores o los mismos ya fueron creados anteriormente")
+
+###########AUTORES################
+###########EDITORIAL##############
+try:
+    conexion()
+    crear_tabla_editorial()    
+except:
+    print("Hay un error en la creación de la tabla de editoriales o la misma ya fue creada anteriormente")
 
 try:
     conexion()
@@ -107,21 +154,9 @@ try:
 except:
     print("Hay un error en el agregado de las editoriales o las mismos ya fueron creados anteriormente")
 
-try:
-    conexion()
-    crear_tabla_categorias()    
-except:
-    print("Hay un error en la creación de la tabla de categorias o la misma ya fue creada anteriormente")
-try:
-    conexion()
-    crear_tabla_autores()    
-except:
-    print("Hay un error en la creación de la tabla de autores o la misma ya fue creada anteriormente")    
-try:
-    conexion()
-    crear_tabla_editorial()    
-except:
-    print("Hay un error en la creación de la tabla de editoriales o la misma ya fue creada anteriormente")
+
+
+###########EDITORIAL##############
 
 def nuevo_libro():
     pass
@@ -155,7 +190,9 @@ def buscar_categorias():
     cursor.execute(sql)
     resultado = cursor.fetchall()
 
-    return resultado
+    categorias_formateadas = [f"{categoria[0]} {categoria[1]}" for categoria in resultado] #CAMBIAR
+
+    return categorias_formateadas
     
     
     
@@ -244,8 +281,7 @@ def modificar_categoria():
             nombre = partes[1]
             entry_nombre.delete(0, 'end')
             entry_nombre.insert(0, nombre)
-        entry_nombre.delete(0, 'end')
-        entry_nombre.insert(0, nombre)    
+            
 
     top = Toplevel()
     top.title("Modificar Categoría")
@@ -352,7 +388,9 @@ def buscar_editoriales():
     cursor.execute(sql)
     resultado = cursor.fetchall()
 
-    return resultado
+    editoriales_formateadas = [f"{editorial[0]} {editorial[1]}" for editorial in resultado] #CAMBIAR
+
+    return editoriales_formateadas
     
     
     
@@ -644,6 +682,7 @@ def modificar_autor():
             nombre = partes[1]
             entry_nombre.delete(0, 'end')
             entry_nombre.insert(0, nombre)
+            
     top = Toplevel()
     top.title("Modificar Autor")
     top.geometry("300x150")
