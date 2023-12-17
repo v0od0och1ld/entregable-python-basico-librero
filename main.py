@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.messagebox import *
 import sqlite3
 from tkinter import Tk, ttk
+import re
 
 
 
@@ -226,6 +227,17 @@ def guardar_mod_categoria(nombre, categoriamod):
 def nueva_categoria():    
     def guardar_categoriain():
         categoria = entry_categoria.get()
+
+        #Valida los caracteres ingresados
+        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        match = patron.search(categoria)
+
+        if not match:
+            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            top.after(0, lambda: top.focus_force()) 
+            return
+        #Valida los caracteres ingresados
+
         resultado = buscar_categoria(categoria)
         if resultado:            
             label_aviso.config(text="Categoría Existente", fg="red")
@@ -258,7 +270,20 @@ def nueva_categoria():
 def modificar_categoria():
     nombre = None
     def guardar_modcategoriain(nombre):
-        categoriamod = entry_nombre.get()        
+        categoriamod = entry_nombre.get()  
+
+        #Valida los caracteres ingresados
+        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        match = patron.search(categoriamod)
+
+        if not match:
+            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            top.after(0, lambda: top.focus_force()) 
+            return
+        #Valida los caracteres ingresados
+
+
+
         resultado = guardar_mod_categoria(nombre, categoriamod)
         if resultado:            
             label_aviso.config(text="Modificación exitosa", fg="Green")
@@ -424,6 +449,18 @@ def guardar_mod_editorial(nombre, editorialmod):
 def nueva_editorial():    
     def guardar_editorialin():
         editorial = entry_editorial.get()
+        
+        #Valida los caracteres ingresados
+        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        match = patron.search(editorial)
+
+        if not match:
+            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            top.after(0, lambda: top.focus_force()) 
+            return
+        #Valida los caracteres ingresados
+
+
         resultado = buscar_editorial(editorial)
         if resultado:            
             label_aviso.config(text="Editorial Existente", fg="red")
@@ -456,7 +493,16 @@ def nueva_editorial():
 def modificar_editorial():
     nombre = None
     def guardar_modeditorialin(nombre):
-        editorialmod = entry_nombre.get()        
+        editorialmod = entry_nombre.get()
+        #Valida los carácteres ingresados
+        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        match = patron.search(editorialmod)
+
+        if not match:
+            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            top.after(0, lambda: top.focus_force()) 
+            return        
+        #Valida los carácteres ingresados
         resultado = guardar_mod_editorial(nombre, editorialmod)
         if resultado:            
             label_aviso.config(text="Modificación exitosa", fg="Green")
@@ -622,6 +668,17 @@ def guardar_mod_autor(nombre, autormod):
 def nuevo_autor():    
     def guardar_autorin():
         autor = entry_autor.get()
+
+        #Valida los caracteres ingresados
+        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        match = patron.search(autor)
+
+        if not match:
+            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            top.after(0, lambda: top.focus_force()) 
+            return
+        #Valida los caracteres ingresados
+
         resultado = buscar_autor(autor)
         if resultado:            
             label_aviso.config(text="Autor Existente", fg="red")
@@ -654,7 +711,18 @@ def nuevo_autor():
 def modificar_autor():
     nombre = None
     def guardar_modautorin(nombre):
-        autormod = entry_nombre.get()        
+        autormod = entry_nombre.get()  
+
+        #Valida los caracteres ingresados
+        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        match = patron.search(autormod)
+
+        if not match:
+            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            top.after(0, lambda: top.focus_force()) 
+            return
+        #Valida los caracteres ingresados
+
         resultado = guardar_mod_autor(nombre, autormod)
         if resultado:            
             label_aviso.config(text="Modificación exitosa", fg="Green")
