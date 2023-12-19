@@ -1246,10 +1246,17 @@ root.config(menu=menubar)
 ##### ESTE ES EL TREEVIEW
 
 tree = ttk.Treeview(root)
-tree["columns"] = ("id","titulo","autor","editorial","categoria","comentario")
+tree["columns"] = ("id","titulo","autor","editorial","anio","categoria","comentario")
 tree.column("#0", width=50, minwidth=50, anchor=W)
 #tree.column("col1", width=80, minwidth=80, anchor=W)
 #tree.column("col2", width=80, minwidth=80, anchor=W)
+tree.heading("#0", text="ID")
+tree.heading("titulo", text="Título")
+tree.heading("autor", text="Autor")
+tree.heading("editorial", text="Editorial")
+tree.heading("anio", text="Año")
+tree.heading("categoria", text="Categoría")
+tree.heading("comentario", text="Comentario")
 tree.grid(column=0, row=5, columnspan=6)
 
 ##### ESTE ES EL TREEVIEW
@@ -1261,6 +1268,26 @@ conn = conexion()
 cursor = conn.cursor()
 
 sql = ("""SELECT * FROM libros""")
+
+#id
+#titulo
+#autor
+#editorial
+#anio
+#categoria
+#comentario
+
+sql = """
+    SELECT l.id, l.titulo, a.autor, e.editorial, l.anio, c.categoria, l.comentario
+FROM libros AS l 
+INNER JOIN autores AS a ON a.id = l.autor 
+INNER JOIN editoriales AS e ON e.id = l.editorial
+INNER JOIN categorias AS c ON c.id = l.categoria
+
+    """
+
+
+
                 
 try:
     cursor.execute(sql)
@@ -1271,7 +1298,7 @@ except:
 for row in rows:    
     #tree.insert("", tkinter.END, values=row)
     #tree.insert("", "", values=row)
-    tree.insert("", tk.END, values=row)
+    tree.insert("", tk.END, values=row) # al final importaste tkinter as tk  (no entiendo por qué)
 ###### LLENAR EL TREEVIEW
 
 
