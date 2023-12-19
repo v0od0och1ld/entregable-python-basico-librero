@@ -5,6 +5,35 @@ from tkinter import Tk, ttk
 import tkinter as tk
 import re
 
+def limpiar_treeview(tree):
+    # Eliminar todos los elementos del Treeview
+    for item in tree.get_children():
+        tree.delete(item)
+
+
+def cargar_libros(tree):
+
+    
+
+    conn = conexion()
+    cursor = conn.cursor()
+
+    sql = """
+        SELECT l.id, l.titulo, a.autor, e.editorial, l.anio, c.categoria, l.comentario
+        FROM libros AS l 
+        INNER JOIN autores AS a ON a.id = l.autor 
+        INNER JOIN editoriales AS e ON e.id = l.editorial
+        INNER JOIN categorias AS c ON c.id = l.categoria
+    """
+
+    try:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+
+        for row in rows:
+            tree.insert("", tk.END, values=row)
+    except:
+        pass
 
 
 def conexion():
@@ -1008,6 +1037,8 @@ def nuevo_libro():
             showinfo("Guardado", "Libro guardado") 
             top.after(0, lambda: top.focus_force())           
             entry_libro.delete(0, 'end') 
+            limpiar_treeview(tree)
+            cargar_libros(tree)
 
     # Verifica la longitud del campo de comentarios
     def limitar_longitud(event):
@@ -1263,42 +1294,8 @@ tree.grid(column=0, row=5, columnspan=6)
 
 
 ###### LLENAR EL TREEVIEW
+cargar_libros(tree)
 
-conn = conexion()
-cursor = conn.cursor()
-
-sql = ("""SELECT * FROM libros""")
-
-#id
-#titulo
-#autor
-#editorial
-#anio
-#categoria
-#comentario
-
-sql = """
-    SELECT l.id, l.titulo, a.autor, e.editorial, l.anio, c.categoria, l.comentario
-FROM libros AS l 
-INNER JOIN autores AS a ON a.id = l.autor 
-INNER JOIN editoriales AS e ON e.id = l.editorial
-INNER JOIN categorias AS c ON c.id = l.categoria
-
-    """
-
-
-
-                
-try:
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-except:
-    pass
-
-for row in rows:    
-    #tree.insert("", tkinter.END, values=row)
-    #tree.insert("", "", values=row)
-    tree.insert("", tk.END, values=row) # al final importaste tkinter as tk  (no entiendo por qué)
 ###### LLENAR EL TREEVIEW
 
 
