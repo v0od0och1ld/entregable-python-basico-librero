@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.messagebox import *
 import sqlite3
 from tkinter import Tk, ttk
+import tkinter as tk
 import re
 
 
@@ -1241,7 +1242,37 @@ menu_archivo.add_command(label="Salir", command=root.quit)
 menubar.add_cascade(label="Archivo", menu=menu_archivo)
 
 root.config(menu=menubar)
-        
+
+##### ESTE ES EL TREEVIEW
+
+tree = ttk.Treeview(root)
+tree["columns"] = ("id","titulo","autor","editorial","categoria","comentario")
+tree.column("#0", width=50, minwidth=50, anchor=W)
+#tree.column("col1", width=80, minwidth=80, anchor=W)
+#tree.column("col2", width=80, minwidth=80, anchor=W)
+tree.grid(column=0, row=5, columnspan=6)
+
+##### ESTE ES EL TREEVIEW
+
+
+###### LLENAR EL TREEVIEW
+
+conn = conexion()
+cursor = conn.cursor()
+
+sql = ("""SELECT * FROM libros""")
+                
+try:
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+except:
+    pass
+
+for row in rows:    
+    #tree.insert("", tkinter.END, values=row)
+    #tree.insert("", "", values=row)
+    tree.insert("", tk.END, values=row)
+###### LLENAR EL TREEVIEW
 
 
 
