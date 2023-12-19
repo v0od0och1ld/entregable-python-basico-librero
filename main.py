@@ -159,14 +159,7 @@ except:
 
 ###########EDITORIAL##############
 
-def nuevo_libro():
-    pass
 
-def modificar_libro():
-    pass
-
-def eliminar_libro():
-    pass
 
 
 
@@ -833,6 +826,372 @@ def eliminar_autor():
 
 ##################                 ################     
 ################## CRUD AUTOR      ################
+##################                 ################
+
+##################                 ################     
+################## CRUD LIBRO      ################
+##################                 ################
+#def nuevo_libro():
+#    pass
+
+def modificar_libro():
+    pass
+
+def eliminar_libro():
+    pass
+
+
+def buscar_libro(nombre_libro):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "SELECT * FROM libros WHERE titulo = ?"
+
+    #0 id
+    #1 titulo
+    #2 autor
+    #3 editorial
+    #4 anio
+    #5 categoria
+    #6 comentario
+
+    cursor.execute(sql, (nombre_libro,))
+    resultado = cursor.fetchone()
+
+    return resultado
+
+def buscar_libros():
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "SELECT * FROM libros order by libro asc"
+
+    cursor.execute(sql)
+    resultado = cursor.fetchall()
+
+    libros_formateados = [f"{libro[0]} {libro[1]}" for libro in resultado] #CAMBIAR
+
+    return libros_formateados
+
+def obtener_id_autor(autor):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "SELECT id FROM autores WHERE autor = ?"
+    
+    cursor.execute(sql, (autor,))
+    resultado = cursor.fetchone()
+
+    return resultado    
+
+def obtener_id_editorial(editorial):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "SELECT id FROM editoriales WHERE editorial = ?"
+    
+    cursor.execute(sql, (editorial,))
+    resultado = cursor.fetchone()
+
+    return resultado    
+
+def obtener_id_categoria(categoria):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "SELECT id FROM categorias WHERE categoria = ?"
+    
+    cursor.execute(sql, (categoria,))
+    resultado = cursor.fetchone()
+
+    return resultado    
+    
+# Graba en la bd el nuevo libro
+def guardar_libro(nombre_libro, autor, editorial, anio, genero, comentario):
+    indice_espacio_autor = autor.find(' ')
+    autor_sin_numero = autor[indice_espacio_autor + 1:]        
+    autor_id = obtener_id_autor(autor_sin_numero)
+
+    indice_espacio_editorial = editorial.find(' ')
+    editorial_sin_numero = editorial[indice_espacio_editorial + 1:]        
+    editorial_id = obtener_id_editorial(editorial_sin_numero)
+    
+    
+    indice_espacio_genero = genero.find(' ')
+    genero_sin_numero = genero[indice_espacio_genero + 1:] 
+    genero_id = obtener_id_categoria(genero_sin_numero)
+
+
+    conn = conexion()
+    cursor = conn.cursor()
+
+    #sql = "INSERT INTO libros (titulo, autor, editorial, anio, categoria, comentario) VALUES(?, ?, ?, ?, ?, ?)" 
+
+    sql = ("""INSERT INTO libros (titulo, autor, editorial, anio, categoria, comentario) 
+                   VALUES ('{}',{}, {}, {},{},'{}')""".format(nombre_libro, autor_id[0], editorial_id[0], anio, genero_id[0], comentario))
+                
+
+
+    try:
+        #cursor.execute(sql, (nombre_libro, autor_id[0], editorial_id[0], anio, genero_id[0], comentario))
+        cursor.execute(sql)
+        conn.commit()
+
+        print(f"Libro guardado: {nombre_libro}")
+    except Exception as e:
+        print(f"Error al guardar el libro {nombre_libro}: {e}")
+        conn.rollback() 
+    finally:
+        conn.close()  
+
+
+def guardar_mod_libro(nombre, libromod):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "UPDATE libros SET libro = ? WHERE libro = ?"
+    try:       
+        cursor.execute(sql, (libromod, nombre))
+        conn.commit()
+        
+        return 1        
+    except:
+        conn.close()  
+
+
+# ventana para agregar una nueva categoria
+def nuevo_libro():
+    def guardar_libroin():
+        libro = entry_libro.get()
+        autor = combo_autores.get()
+        editorial = combo_editoriales.get()
+        genero = combo_categorias.get()
+        anio = entry_anio.get()
+        comentario = text_comentario.get("1.0", "end-1c")
+
+
+
+        #Valida los caracteres ingresados en el titulo
+        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        match = patron.search(libro)
+
+        if not match:
+            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            top.after(0, lambda: top.focus_force()) 
+            return
+        #Valida los caracteres ingresados en el titulo
+        #Valida los caracteres ingresados en el año
+
+        patron = re.compile("^(1\d{3}|2\d{3})$")  # Expresión regular para años entre 1000 y 2999
+        match = patron.match(anio)
+
+        if not match:
+            showerror("Error", "El año es incorrecto") 
+            top.after(0, lambda: top.focus_force()) 
+            return
+        
+        #Valida los caracteres ingresados en el año
+        #Valida los caracteres ingresados en los comentarios
+        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        match = patron.search(comentario)
+
+        if not match:
+            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            top.after(0, lambda: top.focus_force()) 
+            return
+        #Valida los caracteres ingresados en los comentarios
+
+
+        resultado = buscar_libro(libro)
+        if resultado:            
+            label_aviso.config(text="Libro Existente", fg="red")
+            showerror("Error", "Libro Existente") 
+            top.after(0, lambda: top.focus_force())           
+        else:            
+            guardar_libro(libro, autor, editorial, anio, genero, comentario)
+            label_aviso.config(text=f"Libro '{libro}' Guardado", fg="green")
+            showinfo("Guardado", "Libro guardado") 
+            top.after(0, lambda: top.focus_force())           
+            entry_libro.delete(0, 'end') 
+
+    # Verifica la longitud del campo de comentarios
+    def limitar_longitud(event):
+        comentario = text_comentario.get("1.0", "end-1c")
+        if len(comentario) > 255:
+            text_comentario.delete("end-1c", "end")  
+
+    top = Toplevel()
+    top.title("Nuevo Libro")
+    top.geometry("300x400")
+    
+
+    label_libro = Label(top, text="Ingrese nuevo Libro:")
+    label_libro.pack()
+
+    entry_libro = Entry(top)
+    entry_libro.pack()
+
+    ####Combobox autor
+    label_autor = Label(top, text="Autor:")
+    label_autor.pack()
+    autores = buscar_autores()        
+    combo_autores = ttk.Combobox(top, values=autores)
+    combo_autores.pack()
+    ####Combobox autor
+    ####Combobox genero
+    label_genero = Label(top, text="Genero:")
+    label_genero.pack()
+    categorias = buscar_categorias()        
+    combo_categorias = ttk.Combobox(top, values=categorias)
+    combo_categorias.pack()
+    ####Combobox genero
+    ####Combobox genero
+    label_editorial = Label(top, text="Editorial:")
+    label_editorial.pack()
+    editoriales = buscar_editoriales()        
+    combo_editoriales = ttk.Combobox(top, values=editoriales)
+    combo_editoriales.pack()
+    ####Combobox genero
+    ####Entry año
+    label_anio = Label(top, text="Año:")
+    label_anio.pack()
+    
+    entry_anio = Entry(top)
+    entry_anio.pack()
+    ####Entry año
+    #### Text comentario ####
+    label_comentario = Label(top, text="Comentarios:")
+    label_comentario.pack()
+    text_comentario = Text(top, height=9, width=30)  
+    text_comentario.pack()
+    text_comentario.bind("<Key>", limitar_longitud)
+    #### Text comentario ####
+
+
+
+    btn_guardar = Button(top, text="Guardar", command=guardar_libroin)
+    btn_guardar.pack()
+    label_aviso = Label(top)  
+    label_aviso.pack()  
+
+#Ventana para modificar categorias
+def modificar_categoria():
+    nombre = None
+    def guardar_modcategoriain(nombre):
+        categoriamod = entry_nombre.get()  
+
+        #Valida los caracteres ingresados
+        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        match = patron.search(categoriamod)
+
+        if not match:
+            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            top.after(0, lambda: top.focus_force()) 
+            return
+        #Valida los caracteres ingresados
+
+
+
+        resultado = guardar_mod_categoria(nombre, categoriamod)
+        if resultado:            
+            label_aviso.config(text="Modificación exitosa", fg="Green")
+            showinfo("Modificar", "Categoría modificada") 
+            top.after(1000, lambda: top.destroy())
+            top.after(1000, lambda: root.focus_force())     
+        else:            
+            label_aviso.config(text=f"Error al modificar la categoría", fg="red")            
+            showerror("Error", "Error al modificar la categoría")
+            top.after(0, lambda: top.focus_force())
+            
+
+    #funcion para pasar texto al combobox
+    def seleccionar_item(event):
+        nonlocal nombre
+        valor_seleccionado = combo.get()
+        #nombre = valor_seleccionado.split(' ')[1]
+        partes = valor_seleccionado.split(' ', 1)
+        if len(partes) > 1:
+            nombre = partes[1]
+            entry_nombre.delete(0, 'end')
+            entry_nombre.insert(0, nombre)
+            
+
+    top = Toplevel()
+    top.title("Modificar Categoría")
+    top.geometry("300x150")
+
+    ####Combobox 
+    categorias = buscar_categorias()        
+    combo = ttk.Combobox(top, values=categorias)
+    combo.pack()
+    combo.bind("<<ComboboxSelected>>", seleccionar_item)
+    ####Combobox
+   
+    entry_nombre = ttk.Entry(top)
+    entry_nombre.pack(pady=10)
+    
+    btn_guardar = Button(top, text="Guardar modificación", command=lambda: guardar_modcategoriain(nombre))
+    btn_guardar.pack()
+    
+    #### Label de notificación de mensajes
+    label_aviso = Label(top)  
+    label_aviso.pack()  
+    #### Label de notificación de mensajes
+
+
+def borrar_categoria(nombre):
+    conn = conexion()
+    cursor = conn.cursor()
+    sql = "DELETE FROM categorias WHERE categoria = ?"
+        
+    try:       
+        cursor.execute(sql, (nombre,))
+        conn.commit()
+        conn.close()        
+        return 1        
+    except:
+        conn.close()  
+
+def eliminar_categoria():
+    nombre = None
+    def eliminar_categoriain(nombre):
+        #categoriamod = entry_nombre.get()        
+        resultado = borrar_categoria(nombre)
+        if resultado:            
+            label_aviso.config(text="Borrado exitosa", fg="Green")  
+            showinfo("Borrado", "Borrado Exitoso")
+            top.after(1000, lambda: top.destroy())
+            top.after(1000, lambda: root.focus_force())     
+        else:            
+            label_aviso.config(text=f"Error al borrar la categoría", fg="red") 
+            showerror("Error", "Error al borrar la categoría")
+            top.after(0, lambda: top.focus_force())            
+            
+
+    #funcion para pasar la variable del combobox
+    def seleccionar_item(event):
+        nonlocal nombre
+        valor_seleccionado = combo.get()
+        #nombre = valor_seleccionado.split(' ')[1]     
+        partes = valor_seleccionado.split(' ', 1)
+        if len(partes) > 1:
+            nombre = partes[1]
+
+    top = Toplevel()
+    top.title("Borrar Categoría")
+    top.geometry("300x150")
+    
+    ####Combobox 
+    categorias = buscar_categorias()        
+    combo = ttk.Combobox(top, values=categorias)
+    combo.pack(pady=10)
+    combo.bind("<<ComboboxSelected>>", seleccionar_item)
+    ####Combobox   
+    
+    btn_borrar = Button(top, text="Borrar", command=lambda: eliminar_categoriain(nombre))
+    btn_borrar.pack(pady=10)
+    
+    #### Label de notificación de mensajes
+    label_aviso = Label(top)  
+    label_aviso.pack()  
+    #### Label de notificación de mensajes
+
+##################                 ################     
+################## CRUD LIBRO      ################
 ##################                 ################
 
 
