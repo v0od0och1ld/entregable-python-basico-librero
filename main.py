@@ -864,11 +864,8 @@ def eliminar_autor():
 #def nuevo_libro():
 #    pass
 
-def modificar_libro():
-    pass
 
-def eliminar_libro():
-    pass
+
 
 
 def buscar_libro(nombre_libro):
@@ -1100,112 +1097,50 @@ def nuevo_libro():
     label_aviso = Label(top)  
     label_aviso.pack()  
 
-#Ventana para modificar categorias
-def modificar_categoria():
-    nombre = None
-    def guardar_modcategoriain(nombre):
-        categoriamod = entry_nombre.get()  
+def eliminar_libro():    
+    def eliminar_libro_seleccionado():
+        seleccion = tree.focus()
+        datos = tree.item(seleccion)
+        libro_id = datos['values'][0] 
 
-        #Valida los caracteres ingresados
-        patron = re.compile("^[a-zA-Z0-9 ]+$")
-        match = patron.search(categoriamod)
-
-        if not match:
-            showerror("Error", "Algunos carácteres introducidos no son válidos") 
-            top.after(0, lambda: top.focus_force()) 
-            return
-        #Valida los caracteres ingresados
+        
 
 
-
-        resultado = guardar_mod_categoria(nombre, categoriamod)
-        if resultado:            
-            label_aviso.config(text="Modificación exitosa", fg="Green")
-            showinfo("Modificar", "Categoría modificada") 
-            top.after(1000, lambda: top.destroy())
-            top.after(1000, lambda: root.focus_force())     
-        else:            
-            label_aviso.config(text=f"Error al modificar la categoría", fg="red")            
-            showerror("Error", "Error al modificar la categoría")
-            top.after(0, lambda: top.focus_force())
-            
-
-    #funcion para pasar texto al combobox
-    def seleccionar_item(event):
-        nonlocal nombre
-        valor_seleccionado = combo.get()
-        #nombre = valor_seleccionado.split(' ')[1]
-        partes = valor_seleccionado.split(' ', 1)
-        if len(partes) > 1:
-            nombre = partes[1]
-            entry_nombre.delete(0, 'end')
-            entry_nombre.insert(0, nombre)
-            
+        
+        resultado = eliminar_libro_db(libro_id)
+        if resultado:        
+            tree.delete(seleccion)
+            showinfo("Borrado", "Libro Borrado")             
+        else:
+            showerror("Error", "Error al borrar") 
 
     top = Toplevel()
-    top.title("Modificar Categoría")
+    top.title("Eliminar Libro")
+    label_info = Label(top, text="Seleccione un libro en el treeview y presione el botón para borrar")
+    label_info.pack()
+    
+
     top.geometry("300x150")
 
-    ####Combobox 
-    categorias = buscar_categorias()        
-    combo = ttk.Combobox(top, values=categorias)
-    combo.pack()
-    combo.bind("<<ComboboxSelected>>", seleccionar_item)
-    ####Combobox
-   
-    entry_nombre = ttk.Entry(top)
-    entry_nombre.pack(pady=10)
-    
-    btn_guardar = Button(top, text="Guardar modificación", command=lambda: guardar_modcategoriain(nombre))
-    btn_guardar.pack()
-    
-    #### Label de notificación de mensajes
-    label_aviso = Label(top)  
-    label_aviso.pack()  
-    #### Label de notificación de mensajes
+    btn_eliminar = Button(top, text="Eliminar Libro", command=eliminar_libro_seleccionado)
+    btn_eliminar.pack()
 
-
-def borrar_categoria(nombre):
+def eliminar_libro_db(libro_id):
+    
     conn = conexion()
     cursor = conn.cursor()
-    sql = "DELETE FROM categorias WHERE categoria = ?"
-        
-    try:       
-        cursor.execute(sql, (nombre,))
+    sql = "DELETE FROM libros WHERE id = ?"
+
+    try:
+        cursor.execute(sql, (libro_id,))
         conn.commit()
-        conn.close()        
-        return 1        
+        conn.close()
+        return True
     except:
-        conn.close()  
+        conn.close()
+        return False
 
-def eliminar_categoria():
-    nombre = None
-    def eliminar_categoriain(nombre):
-        #categoriamod = entry_nombre.get()        
-        resultado = borrar_categoria(nombre)
-        if resultado:            
-            label_aviso.config(text="Borrado exitosa", fg="Green")  
-            showinfo("Borrado", "Borrado Exitoso")
-            top.after(1000, lambda: top.destroy())
-            top.after(1000, lambda: root.focus_force())     
-        else:            
-            label_aviso.config(text=f"Error al borrar la categoría", fg="red") 
-            showerror("Error", "Error al borrar la categoría")
-            top.after(0, lambda: top.focus_force())            
-            
 
-    #funcion para pasar la variable del combobox
-    def seleccionar_item(event):
-        nonlocal nombre
-        valor_seleccionado = combo.get()
-        #nombre = valor_seleccionado.split(' ')[1]     
-        partes = valor_seleccionado.split(' ', 1)
-        if len(partes) > 1:
-            nombre = partes[1]
-
-    top = Toplevel()
-    top.title("Borrar Categoría")
-    top.geometry("300x150")
     
     ####Combobox 
     categorias = buscar_categorias()        
@@ -1237,7 +1172,7 @@ menu_archivo = Menu(menubar, tearoff=0) #tearoff es para subniveles de menu
 #Libros
 submenu_libros = Menu(menu_archivo, tearoff=0)
 submenu_libros.add_command(label="Nuevo", command=nuevo_libro)
-submenu_libros.add_command(label="Modificar", command=modificar_libro)
+#submenu_libros.add_command(label="Modificar", command=modificar_libro)
 submenu_libros.add_command(label="Eliminar", command=eliminar_libro)
 menu_archivo.add_cascade(label="Libros", menu=submenu_libros)
 #Libros
@@ -1278,10 +1213,10 @@ root.config(menu=menubar)
 
 tree = ttk.Treeview(root)
 tree["columns"] = ("id","titulo","autor","editorial","anio","categoria","comentario")
-tree.column("#0", width=50, minwidth=50, anchor=W)
+#tree.column("#0", width=50, minwidth=50, anchor=W)
 #tree.column("col1", width=80, minwidth=80, anchor=W)
 #tree.column("col2", width=80, minwidth=80, anchor=W)
-tree.heading("#0", text="ID")
+tree.heading("id", text="ID")
 tree.heading("titulo", text="Título")
 tree.heading("autor", text="Autor")
 tree.heading("editorial", text="Editorial")
