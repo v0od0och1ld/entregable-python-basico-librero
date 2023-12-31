@@ -980,7 +980,7 @@ def guardar_mod_libro(nombre, libromod):
         conn.close()  
 
 
-# ventana para agregar una nueva categoria
+# ventana para agregar una nuevo libro
 def nuevo_libro():
     def guardar_libroin():
         libro = entry_libro.get()
@@ -993,11 +993,11 @@ def nuevo_libro():
 
 
         #Valida los caracteres ingresados en el titulo
-        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        patron = re.compile("^[a-zA-Z0-9ÁÉÍÓÚáéíóúÜü ]+$")
         match = patron.search(libro)
 
         if not match:
-            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            showerror("Error", "Algunos carácteres introducidos en el libro no son válidos") 
             top.after(0, lambda: top.focus_force()) 
             return
         #Valida los caracteres ingresados en el titulo
@@ -1013,11 +1013,11 @@ def nuevo_libro():
         
         #Valida los caracteres ingresados en el año
         #Valida los caracteres ingresados en los comentarios
-        patron = re.compile("^[a-zA-Z0-9 ]+$")
+        patron = re.compile("^[a-zA-Z0-9ÁÉÍÓÚáéíóúÜü ]*$")
         match = patron.search(comentario)
 
         if not match:
-            showerror("Error", "Algunos carácteres introducidos no son válidos") 
+            showerror("Error", "Algunos carácteres introducidos en los comentarios no son válidos") 
             top.after(0, lambda: top.focus_force()) 
             return
         #Valida los caracteres ingresados en los comentarios
